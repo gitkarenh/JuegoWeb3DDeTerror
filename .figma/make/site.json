@@ -1,0 +1,10 @@
+{
+  "description": "Experience a thrilling 3D psychological horror game where players navigate a mysterious forest, uncovering legends while evading a relentless creature.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
