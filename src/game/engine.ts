@@ -53,6 +53,7 @@ const LEVEL_META: Record<LevelId, {
   subtitle: string
   fogDensity: number
   ambientHex: number
+  ambientIntensity: number
   skyHex: number
   creatureSpeed: number
   visionRange: number
@@ -61,19 +62,19 @@ const LEVEL_META: Record<LevelId, {
   1: {
     name: "EL BOSQUE OLVIDADO",
     subtitle: "Nivel 1 — Encuentra las 3 llaves rituales",
-    fogDensity: 0.065, ambientHex: 0x04060a, skyHex: 0x000000,
+    fogDensity: 0.035, ambientHex: 0x1a2840, ambientIntensity: 2.8, skyHex: 0x05080e,
     creatureSpeed: 1.4, visionRange: 13, hearingRadius: 7,
   },
   2: {
     name: "SANATORIO ARKHAM",
     subtitle: "Nivel 2 — Activa el generador y encuentra la tarjeta",
-    fogDensity: 0.04, ambientHex: 0x060404, skyHex: 0x000000,
+    fogDensity: 0.04, ambientHex: 0x1a0e0e, ambientIntensity: 1.8, skyHex: 0x000000,
     creatureSpeed: 2.0, visionRange: 15, hearingRadius: 8,
   },
   3: {
     name: "LAS CATACUMBAS",
     subtitle: "Nivel 3 — Descifra el código y escapa",
-    fogDensity: 0.035, ambientHex: 0x02040a, skyHex: 0x000000,
+    fogDensity: 0.035, ambientHex: 0x0e0e1a, ambientIntensity: 1.5, skyHex: 0x000000,
     creatureSpeed: 2.6, visionRange: 10, hearingRadius: 10,
   },
 }
@@ -119,7 +120,7 @@ function addWall(scene: THREE.Scene, x: number, y: number, z: number, w: number,
 function buildTree(scene: THREE.Scene, x: number, z: number) {
   const g = new THREE.Group()
   const h = 5 + Math.random() * 7
-  const trunkMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x060402) })
+  const trunkMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x2a1a0e) })
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08 + Math.random() * 0.17, 0.15 + Math.random() * 0.22, h, 6), trunkMat)
   trunk.position.y = h / 2
   trunk.rotation.z = (Math.random() - 0.5) * 0.12
@@ -128,7 +129,7 @@ function buildTree(scene: THREE.Scene, x: number, z: number) {
   for (let l = 0; l < layers; l++) {
     const ch = 1.4 + Math.random() * 2.2
     const cr = 0.7 + Math.random() * 1.6
-    const fc = new THREE.Color(0x020702).lerp(new THREE.Color(0x061008), Math.random())
+    const fc = new THREE.Color(0x0e3010).lerp(new THREE.Color(0x1a4820), Math.random())
     const cone = new THREE.Mesh(new THREE.ConeGeometry(cr * (1 - l * 0.1), ch, 7), new THREE.MeshLambertMaterial({ color: fc }))
     cone.position.y = h * 0.55 + l * ch * 0.52
     cone.rotation.y = Math.random() * Math.PI
@@ -211,9 +212,10 @@ export class GameEngine {
     this.scene.add(this.camera)
 
     // Flashlight — child of camera
-    this.flashlight = new THREE.SpotLight(0xbbd4e8, 3.5, 24, Math.PI / 9, 0.45, 1.6)
+    this.flashlight = new THREE.SpotLight(0xccddff, 12, 40, Math.PI / 5.5, 0.35, 0.9)
+    this.flashlight.position.set(0, 0, 0)
     const ft = new THREE.Object3D()
-    ft.position.set(0, 0, -1)
+    ft.position.set(0, -0.1, -1)
     this.camera.add(this.flashlight)
     this.camera.add(ft)
     this.flashlight.target = ft
@@ -519,7 +521,7 @@ export class GameEngine {
     // ── Flashlight battery ──
     if (this.flashlightOn) {
       this.battery = Math.max(0, this.battery - dt * 0.8)
-      this.flashlight.intensity = 2.5 * (this.battery / 100) + 0.5
+      this.flashlight.intensity = 10 * (this.battery / 100) + 2
       if (this.battery <= 0) { this.flashlightOn = false; this.flashlight.visible = false }
     } else {
       this.battery = Math.min(100, this.battery + dt * 0.2)
@@ -640,7 +642,7 @@ export class GameEngine {
     this.visionRange = meta.visionRange
     this.hearingRadius = meta.hearingRadius
 
-    const ambient = new THREE.AmbientLight(meta.ambientHex, 1.2)
+    const ambient = new THREE.AmbientLight(meta.ambientHex, meta.ambientIntensity)
     this.scene.add(ambient)
 
     if (id === 1) this.buildLevel1()
@@ -654,12 +656,12 @@ export class GameEngine {
   // ── Level 1: El Bosque Olvidado ────────────────────────────────────────────
 
   private buildLevel1() {
-    const moon = new THREE.DirectionalLight(0x1a1a3e, 0.5)
+    const moon = new THREE.DirectionalLight(0x3344aa, 1.8)
     moon.position.set(-15, 30, 20)
     this.scene.add(moon)
 
     // Ground
-    addFloor(this.scene, 0, 0, 200, 200, 0x060a04)
+    addFloor(this.scene, 0, 0, 200, 200, 0x1a3018)
 
     // Trees
     const rng = mulberry32(42)
@@ -678,7 +680,7 @@ export class GameEngine {
 
     // Hide spot: hollow log at [8, 12]
     const logGroup = new THREE.Group()
-    const logMat = new THREE.MeshLambertMaterial({ color: 0x0d0a07 })
+    const logMat = new THREE.MeshLambertMaterial({ color: 0x2a1e12 })
     const logMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 4, 8), logMat)
     logMesh.rotation.z = Math.PI / 2
     logMesh.position.set(0, 0.6, 0)
@@ -695,13 +697,13 @@ export class GameEngine {
     // Collectibles: 3 ritual keys
     const keyPositions: [number, number][] = [[14, 8], [-18, 10], [5, -20]]
     keyPositions.forEach(([x, z], i) => {
-      const glow = new THREE.PointLight(0xffaa22, 1.5, 4)
+      const glow = new THREE.PointLight(0xffaa22, 3, 8)
       glow.position.set(x, 1.2, z)
       this.scene.add(glow)
 
       const mesh = new THREE.Mesh(
         new THREE.TorusGeometry(0.15, 0.04, 8, 16),
-        new THREE.MeshBasicMaterial({ color: 0xffbb33 })
+        new THREE.MeshBasicMaterial({ color: 0xffcc44 })
       )
       mesh.position.set(x, 1.1, z)
       this.scene.add(mesh)
@@ -729,18 +731,18 @@ export class GameEngine {
     })
 
     // Exit gate
-    const exitLight = new THREE.PointLight(0xff3311, 0, 8)
+    const exitLight = new THREE.PointLight(0xff3311, 0, 12)
     exitLight.position.set(0, 2, -35)
     this.scene.add(exitLight)
 
     const gateGeo = new THREE.BoxGeometry(3, 4, 0.3)
-    const gateMat = new THREE.MeshBasicMaterial({ color: 0xff3311, transparent: true, opacity: 0 })
+    const gateMat = new THREE.MeshBasicMaterial({ color: 0xff4422, transparent: true, opacity: 0 })
     const gate = new THREE.Mesh(gateGeo, gateMat)
     gate.position.set(0, 2, -35)
     this.scene.add(gate)
 
     // Gate pillars
-    const pillarMat = new THREE.MeshLambertMaterial({ color: 0x0a0807 })
+    const pillarMat = new THREE.MeshLambertMaterial({ color: 0x2a2018 })
     ;[-1.8, 1.8].forEach(ox => {
       const p = new THREE.Mesh(new THREE.BoxGeometry(0.4, 5, 0.4), pillarMat)
       p.position.set(ox, 2.5, -35)
@@ -777,7 +779,7 @@ export class GameEngine {
 
   private buildLevel2() {
     // Dim point lights around the level
-    const warmLight = new THREE.PointLight(0x1a0a0a, 2, 20)
+    const warmLight = new THREE.PointLight(0x3a1a1a, 4, 30)
     warmLight.position.set(0, 3, 5)
     this.scene.add(warmLight)
 
@@ -947,9 +949,6 @@ export class GameEngine {
     const FLOOR = 0x0a0808
     const CEIL = 0x060404
     const WALL = 0x0e0a0a
-
-    const dim = new THREE.AmbientLight(0x00040a, 0.6)
-    this.scene.add(dim)
 
     // Drip-like point lights scattered
     ;[
